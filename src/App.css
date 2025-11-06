@@ -1,0 +1,56 @@
+/* ---------- App.css ---------- */
+
+.app-container {
+  padding: 2rem;
+}
+
+/* Enhance table visuals globally */
+.mantine-Table-root {
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+}
+
+/* Hover effect for rows */
+.mantine-Table-root tr:hover td {
+  background-color: #f3f7ff;
+  transition: background-color 0.25s ease;
+}
+
+/* Checkbox alignment fix */
+.mantine-Checkbox-root {
+  margin: 0 auto;
+}
+
+/* Subtle shadow under table */
+.mantine-Table-root {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Make header bold and clear */
+.mantine-Table-root th {
+  background-color: #f8fafc;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #555;
+}
+
+/* Zebra stripe style */
+.mantine-Table-root tbody tr:nth-child(odd) td {
+  background-color: #fcfcfd;
+}
+
+/* Smooth drawer animation for aesthetic consistency */
+.mantine-Drawer-content {
+  transition: transform 0.3s ease;
+}
+
+.small-form .mantine-Select-root {
+  font-size: 0.85rem;
+}
+
+.small-form .mantine-Select-input {
+  height: 32px;
+  padding: 0 0.5rem;
+}
