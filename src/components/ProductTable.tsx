@@ -5,7 +5,7 @@ import {
   Badge,
   Tooltip,
   Button,
-  Drawer,
+  Modal,
   TextInput,
   MultiSelect,
   Select,
@@ -39,7 +39,6 @@ interface SavedConfig {
   filters: FilterState;
 }
 
-// ✅ Data with tooltips for both Prod Type and Component Status
 const productData: Product[] = [
   {
     id: "30002",
@@ -49,17 +48,8 @@ const productData: Product[] = [
     physStatus: "Quality Approved",
     printBy: "2025-10-07",
     shipBy: "2025-10-09",
-    parts: [
-      "Wrist Band, size M",
-      "Velcro Strip, size 12cm",
-      "Elastic Cord, size 20cm",
-    ],
-    componentDetails: [
-      "None Not Started",
-      "None Started",
-      "Wrist Support Base Finished",
-      "Wrist Strap Finished",
-    ],
+    parts: ["Wrist Band, size M", "Velcro Strip, size 12cm", "Elastic Cord, size 20cm"],
+    componentDetails: ["None Not Started", "None Started", "Wrist Support Base Finished", "Wrist Strap Finished"],
   },
   {
     id: "30000",
@@ -69,16 +59,8 @@ const productData: Product[] = [
     physStatus: "Insufficient Blueprints",
     printBy: "2025-10-08",
     shipBy: "2025-10-10",
-    parts: [
-      "Upper Strap, size L",
-      "Lower Strap, size M",
-      "Ankle Padding, size 15cm",
-    ],
-    componentDetails: [
-      "Anterior Shell Not Started",
-      "Posterior Shell Not Started",
-      "None Finished",
-    ],
+    parts: ["Upper Strap, size L", "Lower Strap, size M", "Ankle Padding, size 15cm"],
+    componentDetails: ["Anterior Shell Not Started", "Posterior Shell Not Started", "None Finished"],
   },
   {
     id: "30001",
@@ -89,11 +71,7 @@ const productData: Product[] = [
     printBy: "2025-10-09",
     shipBy: "2025-10-11",
     parts: ["Shoulder Strap, size XL", "Padding Insert, size 8cm"],
-    componentDetails: [
-      "None Not Started",
-      "AC Joint Pad Started",
-      "AC Joint Base Finished",
-    ],
+    componentDetails: ["None Not Started", "AC Joint Pad Started", "AC Joint Base Finished"],
   },
   {
     id: "30003",
@@ -104,47 +82,29 @@ const productData: Product[] = [
     printBy: "-",
     shipBy: "2025-10-12",
     parts: ["Thumb Strap, size S", "Support String, size 28cm"],
-    componentDetails: [
-      "Thumb Ring Not Started",
-      "Thumb Base Started",
-      "None Finished",
-    ],
+    componentDetails: ["Thumb Ring Not Started", "Thumb Base Started", "None Finished"],
   },
 ];
 
 export default function ProductTable() {
   const [selected, setSelected] = useState<string[]>([]);
-  const [drawerOpened, setDrawerOpened] = useState(false);
+  const [modalOpened, setModalOpened] = useState(false);
 
-  const [filters, setFilters] = useState<FilterState>({
-    prodType: [],
-    digStatus: [],
-    physStatus: [],
-  });
-
-  const [pendingFilters, setPendingFilters] = useState<FilterState>({
-    prodType: [],
-    digStatus: [],
-    physStatus: [],
-  });
+  const [filters, setFilters] = useState<FilterState>({ prodType: [], digStatus: [], physStatus: [] });
+  const [pendingFilters, setPendingFilters] = useState<FilterState>({ prodType: [], digStatus: [], physStatus: [] });
 
   const [configName, setConfigName] = useState("");
   const [savedConfigs, setSavedConfigs] = useState<SavedConfig[]>([]);
   const [selectedConfig, setSelectedConfig] = useState<string | null>(null);
 
   const toggleSelect = (id: string) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+    setSelected((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
   const filteredProducts = productData.filter((prod) => {
-    const matchesProdType =
-      filters.prodType.length === 0 || filters.prodType.includes(prod.type);
-    const matchesDigStatus =
-      filters.digStatus.length === 0 || filters.digStatus.includes(prod.digStatus);
-    const matchesPhysStatus =
-      filters.physStatus.length === 0 || filters.physStatus.includes(prod.physStatus);
+    const matchesProdType = filters.prodType.length === 0 || filters.prodType.includes(prod.type);
+    const matchesDigStatus = filters.digStatus.length === 0 || filters.digStatus.includes(prod.digStatus);
+    const matchesPhysStatus = filters.physStatus.length === 0 || filters.physStatus.includes(prod.physStatus);
     return matchesProdType && matchesDigStatus && matchesPhysStatus;
   });
 
@@ -167,15 +127,14 @@ export default function ProductTable() {
       setSavedConfigs((prev) => {
         const existing = prev.find((c) => c.name === configName.trim());
         if (existing) {
-          return prev.map((c) => c.name === configName.trim() ? { ...c, filters: newFilters } : c
-          );
+          return prev.map((c) => (c.name === configName.trim() ? { ...c, filters: newFilters } : c));
         } else {
           return [...prev, { name: configName.trim(), filters: newFilters }];
         }
       });
     }
 
-    setDrawerOpened(false);
+    setModalOpened(false);
   };
 
   const loadConfiguration = (name: string | null) => {
@@ -197,9 +156,22 @@ export default function ProductTable() {
       {/* HEADER */}
       <Group justify="space-between" mb="md">
         <Title order={3}>Product Table</Title>
-        <Button size="sm" onClick={() => setDrawerOpened(true)}>
-          Set Configuration
-        </Button>
+        <Group>
+          {savedConfigs.length > 0 && (
+            <Select
+              data={savedConfigs.map((c) => c.name)}
+              placeholder="Select Configuration"
+              value={selectedConfig}
+              onChange={loadConfiguration}
+              size="xs"
+              radius="sm"
+              comboboxProps={{ withinPortal: false }}
+            />
+          )}
+          <Button size="sm" onClick={() => setModalOpened(true)}>
+            Configure Filters
+          </Button>
+        </Group>
       </Group>
 
       {/* TABLE */}
@@ -222,24 +194,15 @@ export default function ProductTable() {
             {filteredProducts.map((prod) => (
               <Table.Tr key={prod.id}>
                 <Table.Td>
-                  <Checkbox
-                    checked={selected.includes(prod.id)}
-                    onChange={() => toggleSelect(prod.id)}
-                  />
+                  <Checkbox checked={selected.includes(prod.id)} onChange={() => toggleSelect(prod.id)} />
                 </Table.Td>
 
                 <Table.Td>{prod.id}</Table.Td>
 
-                {/* ✅ Tooltip for Product Type */}
+                {/* Tooltip for Product Type */}
                 <Table.Td>
                   <Tooltip
-                    label={
-                      <Box>
-                        {prod.parts.map((p, idx) => (
-                          <div key={idx}>{p}</div>
-                        ))}
-                      </Box>
-                    }
+                    label={<Box>{prod.parts.map((p, idx) => <div key={idx}>{p}</div>)}</Box>}
                     withArrow
                     multiline
                     transitionProps={{ transition: "pop", duration: 150 }}
@@ -248,16 +211,10 @@ export default function ProductTable() {
                   </Tooltip>
                 </Table.Td>
 
-                {/* ✅ Tooltip for Component Status */}
+                {/* Tooltip for Component Status */}
                 <Table.Td>
                   <Tooltip
-                    label={
-                      <Box>
-                        {prod.componentDetails.map((detail, idx) => (
-                          <div key={idx}>{detail}</div>
-                        ))}
-                      </Box>
-                    }
+                    label={<Box>{prod.componentDetails.map((detail, idx) => <div key={idx}>{detail}</div>)}</Box>}
                     withArrow
                     multiline
                     transitionProps={{ transition: "pop", duration: 150 }}
@@ -314,139 +271,94 @@ export default function ProductTable() {
         </Table>
       </ScrollArea>
 
-      {/* ✅ Drawer for Configurations */}
-      <Drawer.Root
-        opened={drawerOpened}
-        onClose={() => setDrawerOpened(false)}
-        position="right"
-        size="xl"
-        zIndex={400}
+      {/* Configurations */}
+      <Modal
+        opened={modalOpened}
+        onClose={() => setModalOpened(false)}
+        title="Create or Load Configuration"
+        size="lg"
+        centered
+        zIndex={500}
       >
-        <Drawer.Overlay backgroundOpacity={0.4} blur={4} />
-        <Drawer.Content>
-          <Drawer.Header>
-            <Drawer.Title>Create Configuration</Drawer.Title>
-            <Drawer.CloseButton size="sm" />
-          </Drawer.Header>
+        <ScrollArea h={420}>
+          <Box p="md">
+            <Divider mb="md" />
+            {savedConfigs.length > 0 && (
+              <Select
+                label="Saved Configurations"
+                placeholder="Select a configuration to load"
+                data={savedConfigs.map((c) => c.name)}
+                value={selectedConfig}
+                onChange={loadConfiguration}
+                size="xs"
+                radius="sm"
+                mb="md"
+                comboboxProps={{ withinPortal: false }}
+              />
+            )}
 
-          <Drawer.Body>
-            <ScrollArea style={{ height: "100%" }}>
-              <Box p="md">
-                <Divider mb="md" />
+            <TextInput
+              label="Configuration Name"
+              placeholder="Enter or update configuration name"
+              size="sm"
+              radius="sm"
+              mb="sm"
+              value={configName}
+              onChange={(e) => setConfigName(e.currentTarget.value)}
+            />
 
-                {savedConfigs.length > 0 && (
-                  <Select
-                    label="Saved Configurations"
-                    placeholder="Select a configuration to load"
-                    data={savedConfigs.map((c) => c.name)}
-                    value={selectedConfig}
-                    onChange={loadConfiguration}
-                    size="xs"
-                    radius="sm"
-                    mb="md"
-                    comboboxProps={{
-                      withinPortal: true,
-                      position: "bottom",
-                      zIndex: 600,
-                    }}
-                  />
-                )}
+            <Group grow align="flex-end" gap="lg" wrap="wrap" mb="lg">
+              <MultiSelect
+                label="Prod Type"
+                data={["Wrist Flex", "Ankle Foot Orthotic", "AC Joint Pad", "Ringed Thumb Splint"]}
+                placeholder="Select Product Types"
+                size="xs"
+                radius="sm"
+                w={220}
+                maxDropdownHeight={160}
+                value={pendingFilters.prodType}
+                onChange={(values) => setPendingFilters((prev) => ({ ...prev, prodType: [...values] }))}
+                comboboxProps={{ withinPortal: false }}
+              />
 
-                <TextInput
-                  label="Configuration Name"
-                  placeholder="Enter or update configuration name"
-                  size="sm"
-                  radius="sm"
-                  mb="sm"
-                  value={configName}
-                  onChange={(e) => setConfigName(e.currentTarget.value)}
-                />
+              <MultiSelect
+                label="Digital Product Status"
+                data={["Internally Approved", "Submitted", "Assigned"]}
+                placeholder="Select Digital Statuses"
+                size="xs"
+                radius="sm"
+                w={220}
+                maxDropdownHeight={160}
+                value={pendingFilters.digStatus}
+                onChange={(values) => setPendingFilters((prev) => ({ ...prev, digStatus: [...values] }))}
+                comboboxProps={{ withinPortal: false }}
+              />
 
-                <Group grow align="flex-end" gap="lg" wrap="wrap" mb="lg">
-                  <MultiSelect
-                    label="Prod Type"
-                    data={[
-                      "Wrist Flex",
-                      "Ankle Foot Orthotic",
-                      "AC Joint Pad",
-                      "Ringed Thumb Splint",
-                    ]}
-                    placeholder="Select Product Types"
-                    size="xs"
-                    radius="sm"
-                    w={220}
-                    maxDropdownHeight={160}
-                    value={pendingFilters.prodType}
-                    onChange={(values) =>
-                      setPendingFilters((prev) => ({ ...prev, prodType: [...values] }))
-                    }
-                    comboboxProps={{
-                      withinPortal: true,
-                      position: "bottom",
-                      zIndex: 600,
-                      middlewares: { flip: false },
-                    }}
-                  />
+              <MultiSelect
+                label="Physical Product Status"
+                data={["Quality Approved", "Insufficient Blueprints", "Started", "Sufficient Blueprints"]}
+                placeholder="Select Physical Statuses"
+                size="xs"
+                radius="sm"
+                w={220}
+                maxDropdownHeight={160}
+                value={pendingFilters.physStatus}
+                onChange={(values) => setPendingFilters((prev) => ({ ...prev, physStatus: [...values] }))}
+                comboboxProps={{ withinPortal: false }}
+              />
+            </Group>
 
-                  <MultiSelect
-                    label="Digital Product Status"
-                    data={["Internally Approved", "Submitted", "Assigned"]}
-                    placeholder="Select Digital Statuses"
-                    size="xs"
-                    radius="sm"
-                    w={220}
-                    maxDropdownHeight={160}
-                    value={pendingFilters.digStatus}
-                    onChange={(values) =>
-                      setPendingFilters((prev) => ({ ...prev, digStatus: [...values] }))
-                    }
-                    comboboxProps={{
-                      withinPortal: true,
-                      position: "bottom",
-                      zIndex: 600,
-                      middlewares: { flip: false },
-                    }}
-                  />
-
-                  <MultiSelect
-                    label="Physical Product Status"
-                    data={[
-                      "Quality Approved",
-                      "Insufficient Blueprints",
-                      "Started",
-                      "Sufficient Blueprints",
-                    ]}
-                    placeholder="Select Physical Statuses"
-                    size="xs"
-                    radius="sm"
-                    w={220}
-                    maxDropdownHeight={160}
-                    value={pendingFilters.physStatus}
-                    onChange={(values) =>
-                      setPendingFilters((prev) => ({ ...prev, physStatus: [...values] }))
-                    }
-                    comboboxProps={{
-                      withinPortal: true,
-                      position: "bottom",
-                      zIndex: 600,
-                      middlewares: { flip: false },
-                    }}
-                  />
-                </Group>
-
-                <Group justify="flex-end" gap="sm" mt="lg">
-                  <Button variant="outline" size="sm" color="gray" onClick={clearFilters}>
-                    Clear Filters
-                  </Button>
-                  <Button size="sm" color="blue" onClick={applyFilters}>
-                    Apply Filters
-                  </Button>
-                </Group>
-              </Box>
-            </ScrollArea>
-          </Drawer.Body>
-        </Drawer.Content>
-      </Drawer.Root>
+            <Group justify="flex-end" gap="sm" mt="lg">
+              <Button variant="outline" size="sm" color="gray" onClick={clearFilters}>
+                Clear Filters
+              </Button>
+              <Button size="sm" color="blue" onClick={applyFilters}>
+                Apply Filters
+              </Button>
+            </Group>
+          </Box>
+        </ScrollArea>
+      </Modal>
     </Box>
   );
 }
