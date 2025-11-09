@@ -169,7 +169,7 @@ export default function ProductTable() {
             />
           )}
           <Button size="sm" onClick={() => setModalOpened(true)}>
-            Configure Filters
+            Add Configuration
           </Button>
         </Group>
       </Group>
@@ -275,7 +275,7 @@ export default function ProductTable() {
       <Modal
         opened={modalOpened}
         onClose={() => setModalOpened(false)}
-        title="Create or Load Configuration"
+        title="Create Configuration"
         size="lg"
         centered
         zIndex={500}
@@ -283,19 +283,6 @@ export default function ProductTable() {
         <ScrollArea h={420}>
           <Box p="md">
             <Divider mb="md" />
-            {savedConfigs.length > 0 && (
-              <Select
-                label="Saved Configurations"
-                placeholder="Select a configuration to load"
-                data={savedConfigs.map((c) => c.name)}
-                value={selectedConfig}
-                onChange={loadConfiguration}
-                size="xs"
-                radius="sm"
-                mb="md"
-                comboboxProps={{ withinPortal: false }}
-              />
-            )}
 
             <TextInput
               label="Configuration Name"
